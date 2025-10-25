@@ -228,7 +228,7 @@ const TutorCommunityChat = () => {
               value="participants"
               className="flex-1 overflow-y-auto p-4"
             >
-              <ParticipantsTab participants={participants} />
+              <ParticipantsTab participants={participants} slug={slug} />
             </TabsContent>
             <TabsContent value="info" className="flex-1 overflow-y-auto p-4">
               <CommunityInfoTab community={community} />

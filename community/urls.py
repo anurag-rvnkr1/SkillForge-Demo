@@ -5,7 +5,10 @@ from .views import (
     JoinCommunityAPIView,
     ChatHistoryAPIView,
     exit_community,
-    NotificationViewSet
+    NotificationViewSet,
+    JoinRequestListAPIView,
+    JoinRequestApproveAPIView,
+    RemoveParticipantAPIView,
 )
 from .views import LiveClassViewSet
 from rest_framework.routers import DefaultRouter
@@ -20,6 +23,9 @@ urlpatterns = [
     path('', include(router.urls)),
     path('create-community/', CommunityCreateAPIView.as_view(), name='community-create'),
     path('community/<slug:slug>/join/', JoinCommunityAPIView.as_view(), name='join-community'),
+    path('community/<slug:slug>/join-requests/', JoinRequestListAPIView.as_view(), name='join-requests-list'),
+    path('community/<slug:slug>/join-requests/<int:pk>/approve/', JoinRequestApproveAPIView.as_view(), name='join-requests-approve'),
+    path('community/<slug:slug>/remove-participant/', RemoveParticipantAPIView.as_view(), name='remove-participant'),
     path('community/<slug:slug>/chat/', ChatHistoryAPIView.as_view(), name='chat-history'),
     path('community/<slug:slug>/exit/', exit_community, name='exit-community')
 ]

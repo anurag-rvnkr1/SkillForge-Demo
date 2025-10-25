@@ -1,4 +1,5 @@
 from .models import Community, Message, Thread, Notification, LiveClass
+from .models import JoinRequest
 from rest_framework import serializers
 from users.api.user_serializers import UserSerializers
 
@@ -93,3 +94,19 @@ class LiveClassSerializer(serializers.ModelSerializer):
 
     def get_tutor_name(self, obj):
         return obj.tutor.username if obj.tutor else None
+
+
+class JoinRequestSerializer(serializers.ModelSerializer):
+    user_name = serializers.SerializerMethodField(read_only=True)
+    community_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = JoinRequest
+        fields = ['id', 'community', 'community_name', 'user', 'user_name', 'status', 'created_at']
+        read_only_fields = ['id', 'community_name', 'user_name', 'created_at', 'status']
+
+    def get_user_name(self, obj):
+        return obj.user.username if obj.user else None
+
+    def get_community_name(self, obj):
+        return obj.community.name if obj.community else None

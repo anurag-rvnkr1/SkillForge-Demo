@@ -115,3 +115,30 @@ class LiveClass(BaseModel):
 
     def __str__(self):
         return f"{self.title} by {self.tutor.username}"
+
+
+class JoinRequest(BaseModel):
+    """Model representing a student's request to join a community."""
+
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+
+    STATUS_CHOICES = (
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+    )
+
+    community = models.ForeignKey(
+        'Community', on_delete=models.CASCADE, related_name='join_requests'
+    )
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='join_requests')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('community', 'user')
+
+    def __str__(self):
+        return f"JoinRequest {self.user.username} -> {self.community.name} [{self.status}]"
