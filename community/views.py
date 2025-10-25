@@ -15,6 +15,9 @@ from .serializer import (
     JoinCommunitySerializer,
     NotificationSerializer
 )
+from .models import LiveClass
+from .serializer import LiveClassSerializer
+from rest_framework import permissions
 
 
 # Create your views here.
@@ -136,6 +139,42 @@ class NotificationViewSet(viewsets.ModelViewSet):
         Filter notifications to only those for the authenticated user.
         """
         return self.queryset.filter(recipient=self.request.user)
+
+
+class LiveClassViewSet(viewsets.ModelViewSet):
+    """API endpoints for LiveClass model.
+
+    - list: GET /live-classes/ (only active classes)
+    - create: POST /live-classes/ (tutors only)
+    - retrieve: GET /live-classes/<id>/
+    - destroy: DELETE /live-classes/<id>/ (only tutor who created it)
+    """
+    queryset = LiveClass.objects.all().order_by('-id')
+    serializer_class = LiveClassSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'destroy', 'update', 'partial_update']:
+            return [IsTutor()]
+        return [permissions.AllowAny()]
+
+    def get_queryset(self):
+        # Only return active classes by default
+        qs = LiveClass.objects.filter(is_active=True).order_by('-created_at')
+        return qs
+
+    def perform_create(self, serializer):
+        # tutor should be provided from request user
+        user = self.request.user
+        serializer.save(tutor=user)
+
+    def destroy(self, request, *args, **kwargs):
+        obj = self.get_object()
+        # Only tutor who created the live class can delete
+        if obj.tutor != request.user:
+            return Response({'error': 'Only the tutor who created this class can delete it.'}, status=status.HTTP_403_FORBIDDEN)
+        obj.is_active = False
+        obj.save()
+        return Response({'status': 'live class closed'}, status=status.HTTP_200_OK)
 
     def partial_update(self, request, *args, **kwargs):
         """

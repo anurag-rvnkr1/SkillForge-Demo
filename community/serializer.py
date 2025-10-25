@@ -1,4 +1,4 @@
-from .models import Community, Message, Thread, Notification
+from .models import Community, Message, Thread, Notification, LiveClass
 from rest_framework import serializers
 from users.api.user_serializers import UserSerializers
 
@@ -79,3 +79,17 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = '__all__'
+
+
+class LiveClassSerializer(serializers.ModelSerializer):
+    """Serializer for LiveClass model."""
+    tutor = serializers.PrimaryKeyRelatedField(read_only=True)
+    tutor_name = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = LiveClass
+        fields = ['id', 'tutor', 'tutor_name', 'title', 'topic', 'jitsi_link', 'created_at', 'is_active']
+        read_only_fields = ['id', 'tutor', 'tutor_name', 'created_at']
+
+    def get_tutor_name(self, obj):
+        return obj.tutor.username if obj.tutor else None

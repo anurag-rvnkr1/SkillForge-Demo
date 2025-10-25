@@ -229,3 +229,91 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     async def send_notification(self, event):
         """Send notification data to WebSocket clients."""
         await self.send(text_data=json.dumps(event['data']))
+
+
+# Simple moderation list - expand as needed or replace with OpenAI moderation integration
+BANNED_KEYWORDS = [
+    "offensiveword1",
+    "offensiveword2",
+]
+
+
+def moderate_message(content):
+    """Return True if content is allowed, False if it contains banned keywords."""
+    if not content:
+        return False
+    lower = content.lower()
+    for banned in BANNED_KEYWORDS:
+        if banned in lower:
+            return False
+    return True
+
+
+class LiveClassConsumer(AsyncWebsocketConsumer):
+    """Handles real-time chat for LiveClass rooms."""
+
+    async def connect(self):
+        self.class_id = self.scope['url_route']['kwargs']['class_id']
+        self.room_group_name = f'live_class_{self.class_id}'
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, code):
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    async def receive(self, text_data=None, bytes_data=None):
+        print(f"LiveClass received: {text_data}")
+        try:
+            data = json.loads(text_data)
+        except Exception:
+            await self.send(text_data=json.dumps({'error': 'invalid payload'}))
+            return
+
+        message = data.get('message')
+        user_id = data.get('user')
+        msg_type = data.get('type')
+
+        user = await self.get_user(user_id)
+        if not user or not message:
+            await self.send(text_data=json.dumps({'error': 'invalid user or message'}))
+            return
+
+        # Moderation
+        if not moderate_message(message):
+            # Masked response to sender only
+            await self.send(text_data=json.dumps({
+                'type': 'moderation_rejected',
+                'message': 'Your message was blocked by moderation.'
+            }))
+            return
+
+        # Save message to DB if you want — reuse Message model optionally
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': message,
+                'user': user.username,
+                'userID': user.id,
+            }
+        )
+
+    async def chat_message(self, event):
+        message = event['message']
+        user = event['user']
+        userID = event['userID']
+
+        await self.send(text_data=json.dumps({
+            'type': 'chat_message',
+            'content': message,
+            'user': user,
+            'userID': userID
+        }))
+
+    @database_sync_to_async
+    def get_user(self, user_id):
+        try:
+            return CustomUser.objects.get(id=user_id)
+        except Exception:
+            return None

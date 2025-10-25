@@ -99,3 +99,19 @@ class Notification(BaseModel):
 
     def __str__(self):
         return f"Notification for {self.recipient.username} - {self.notification_type}"
+
+
+class LiveClass(BaseModel):
+    """Model representing a Live Class (real-time discussion room)."""
+
+    tutor = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="live_classes"
+    )
+    title = models.CharField(max_length=255)
+    topic = models.TextField(null=True, blank=True)
+    jitsi_link = models.URLField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.title} by {self.tutor.username}"

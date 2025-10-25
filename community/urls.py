@@ -7,12 +7,14 @@ from .views import (
     exit_community,
     NotificationViewSet
 )
+from .views import LiveClassViewSet
 from rest_framework.routers import DefaultRouter
 
 # Initialize the router for the API views
 router = DefaultRouter()
 router.register('list-community', ListCommunity, basename='list-community')
 router.register('notification', NotificationViewSet, basename='notification')
+router.register('live-classes', LiveClassViewSet, basename='live-classes')
 
 urlpatterns = [
     path('', include(router.urls)),

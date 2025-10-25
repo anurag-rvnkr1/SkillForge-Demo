@@ -1,6 +1,7 @@
 import React from "react";
 import { Video, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LiveClassesButton from "@/components/LiveClasses/LiveClassesButton";
 
 const ChatHeader = ({ community, onExit, socket, userID }) => {
   const handleVideoCall = () => {
@@ -36,6 +37,7 @@ const ChatHeader = ({ community, onExit, socket, userID }) => {
           <Video className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
           <span className="hidden sm:inline">Video Call</span>
         </Button>
+        <LiveClassesButton />
         {/* <Button
           variant="secondary"
           className="flex items-center text-xs sm:text-sm"

@@ -60,6 +60,7 @@ const TutorCreateCommunity = lazy(() =>
 const TutorCommunity = lazy(() =>
   import("@/features/tutor/pages/community/TutorCommunity")
 );
+import LiveClassesPage from "@/components/LiveClasses/LiveClassesPage";
 
 const TutorLayout = () => {
   const location = useLocation();
@@ -231,6 +232,12 @@ const TutorLayout = () => {
                 path="/community"
                 element={
                   <ProtectedRoute element={<TutorCommunity />} role={"tutor"} />
+                }
+              />
+              <Route
+                path="/community/live-classes"
+                element={
+                  <ProtectedRoute element={<LiveClassesPage />} role={"tutor"} />
                 }
               />
               <Route
