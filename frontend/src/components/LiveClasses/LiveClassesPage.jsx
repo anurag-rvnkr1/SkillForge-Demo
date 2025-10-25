@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fetchLiveClasses, createLiveClass } from "@/lib/api/liveclasses";
 import { Button } from "@/components/ui/button";
-import ClassRoomDetail from "./ClassRoomDetail";
 import { useSelector } from "react-redux";
 
 const LiveClassesPage = () => {
@@ -10,7 +9,7 @@ const LiveClassesPage = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [title, setTitle] = useState("");
   const [topic, setTopic] = useState("");
-  const [activeClass, setActiveClass] = useState(null);
+  
   const role = useSelector((state) => state.auth.role);
 
   const load = async () => {
@@ -95,23 +94,45 @@ const LiveClassesPage = () => {
             <p className="text-sm text-gray-600 mb-2">{c.topic}</p>
             <p className="text-xs text-gray-500 mb-4">Tutor: {c.tutor_name}</p>
             <div className="flex space-x-2">
-              <Button onClick={() => setActiveClass(c)}>Join Class</Button>
+              <Button
+                onClick={() => {
+                  // Open Jitsi meeting in a new tab so chat on community remains available
+                  try {
+                    window.open(c.jitsi_link, "_blank", "noopener,noreferrer");
+                  } catch (err) {
+                    // fallback
+                    window.location.href = c.jitsi_link;
+                  }
+                }}
+              >
+                Join Class
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(c.jitsi_link);
+                    window.alert("Live class link copied to clipboard.");
+                  } catch (e) {
+                    // fallback
+                    const dummy = document.createElement("textarea");
+                    document.body.appendChild(dummy);
+                    dummy.value = c.jitsi_link;
+                    dummy.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(dummy);
+                    window.alert("Live class link copied to clipboard.");
+                  }
+                }}
+              >
+                Copy Link
+              </Button>
             </div>
           </div>
         ))}
       </div>
 
-      {activeClass && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-8xl h-[100vh] rounded shadow p-4 overflow-auto">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-bold">{activeClass.title}</h3>
-              <button onClick={() => setActiveClass(null)} className="text-sm text-gray-600">Close</button>
-            </div>
-            <ClassRoomDetail liveClass={activeClass} onClose={() => setActiveClass(null)} />
-          </div>
-        </div>
-      )}
+      {/* Note: joining opens the Jitsi meeting in a new tab; chat remains on the community page */}
     </div>
   );
 };
