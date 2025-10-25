@@ -65,7 +65,7 @@ const ParticipantsTab = ({ participants = [], slug }) => {
               className="px-3 py-1 bg-indigo-600 text-white rounded"
               onClick={() => setShowRequests(!showRequests)}
             >
-              {showRequests ? "Hide Requests" : "Manage Join Requests"}
+              {showRequests ? "Requests" : "Requests"}
             </button>
             <select
               value={filter}
@@ -110,6 +110,13 @@ const ParticipantsTab = ({ participants = [], slug }) => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Horizontal divider between requests and participants */}
+        {showRequests && role === "tutor" && (
+          <div className="my-4">
+            <div className="border-t border-gray-900" />
           </div>
         )}
 
