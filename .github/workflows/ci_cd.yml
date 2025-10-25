@@ -13,9 +13,9 @@ jobs:
 
     services:
       postgres:
-        image: postgres:14
+        image: postgres:18
         env:
-          POSTGRES_DB: skillforge
+          POSTGRES_DB: skillforge_db
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
         ports:
@@ -34,23 +34,19 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.12"
 
       - name: Install backend dependencies
-        working-directory: ./backend
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Run Django migrations
-        working-directory: ./backend
         env:
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/skillforge
-        run: |
-          python manage.py migrate
+          DATABASE_URL: postgresql://skillforge_user:y5YJBigt0YIbYSv5V8FQZ3JxKeXQYVHx@dpg-d3sv451r0fns738q8jcg-a.oregon-postgres.render.com/skillforge_db_u1sk
+        run: python manage.py migrate
 
       - name: Run Django tests
-        working-directory: ./backend
         run: python manage.py test
 
       # --- Frontend Setup ---
@@ -105,7 +101,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # You can adapt this block depending on your platform
       - name: Trigger Render Deploy Hook
         run: |
           curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
